@@ -86,7 +86,7 @@ Tag the users document based on its content. You can use between 1 and 5 of the 
         return model
     }
 
-    async generateTags(documentText: string): Promise<Array<string>> {
+    async generateTags(documentText: string, currentTags?: string[]): Promise<Array<string>> {
         const chain: Runnable = this.prompt.pipe(this.model)
 
         const tagsString: string = getTagsString()
@@ -127,9 +127,9 @@ Tag the users document based on its content. You can use between 1 and 5 of the 
             } else if (error.message.includes('Invalid URL')) {
                 // Notify the user about the incorrect custom base URL
                 throw new Error('Invalid custom base URL provided. Please check your custom base URL.');
-            // } else if (error.message.includes('Connection error') && this.baseURL !== null && (this.modelName.includes('gpt-4') || this.modelName.includes('gpt-3.5-turbo'))) {
-            //     // Notify the user about the incorrect custom base URL
-            //     throw new Error('Could not connect to custom base URL provided. Please check your custom base URL.');
+                // } else if (error.message.includes('Connection error') && this.baseURL !== null && (this.modelName.includes('gpt-4') || this.modelName.includes('gpt-3.5-turbo'))) {
+                //     // Notify the user about the incorrect custom base URL
+                //     throw new Error('Could not connect to custom base URL provided. Please check your custom base URL.');
             } else {
                 console.error('Error while generating tags:', error.message);
                 throw new Error('Error while generating tags.');

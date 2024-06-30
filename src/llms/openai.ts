@@ -10,7 +10,7 @@ import {
 
 import { LLM } from './base'
 import { TagDocumentTool } from '../tool'
-import { getTagsString } from '../helpers/get_tags';
+import { getTagsString as getVaultTagsString } from '../helpers/get_tags';
 
 // write a class to instantiate the chain and handle the prompts
 export class OpenAiLLM extends LLM {
@@ -35,7 +35,14 @@ EXISTING TAGS:
 {tagsString}
 \`\`\`
 
-Tag the users document based on its content. You can use between 1 and 5 of the EXISTING TAGS but also create 1 to 3 NEW TAGS that you come up with on your own. Ensure that the tags accurately reflect the document's primary focus and themes.
+USED TAGS:
+\`\`\`
+{currentTags}
+\`\`\`
+
+Tag the users document based on its content. You can use between 1 and 5 of the EXISTING TAGS but also create 0 to 3 NEW TAGS that you come up with on your own. 
+Make sure you don't have tags that are duplicates of USED TAGS
+Ensure that the tags accurately reflect the document's primary focus and themes.
 `
 
         const humanMessage = "DOCUMENT:\n```{document}```"
@@ -93,19 +100,20 @@ Tag the users document based on its content. You can use between 1 and 5 of the 
 
             return modelWithOutputParser
         }
-            
+
         return model;
     }
 
-    async generateTags(documentText: string): Promise<Array<string>> {
+    async generateTags(documentText: string, currentTags?: string[]): Promise<Array<string>> {
         const chain: Runnable = this.prompt.pipe(this.model)
 
-        const tagsString: string = getTagsString()
+        const tagsString: string = getVaultTagsString()
 
         try {
             const response = await chain.invoke({
                 tagsString: tagsString,
                 document: documentText,
+                currentTags: currentTags?.map(tag => `- ${tag}`).join("\n"),
             });
 
             console.debug("LLM Response: ", response)

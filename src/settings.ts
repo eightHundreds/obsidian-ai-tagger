@@ -83,6 +83,24 @@ export class AiTaggerSettingTab extends PluginSettingTab {
                     })
             );
 
+        // system prompt
+        new Setting(containerElement)
+            .setName('System Prompt')
+            .setDesc('The system prompt to use for the AI model.')
+            .addTextArea(text => {
+                text.inputEl.rows = 20;
+                text.inputEl.cols = 50;
+                return text
+                    .setPlaceholder('Enter system prompt')
+                    .setValue(this.plugin.settings.systemPrompt)
+                    .onChange(async (value) => {
+                        this.plugin.settings.systemPrompt = value;
+                        await this.plugin.saveSettings();
+                    })
+            }
+
+            );
+
         new Setting(containerElement)
             .setName('Lowercase Mode')
             .setDesc('If enabled all tags will be generated with lowercase characters.')

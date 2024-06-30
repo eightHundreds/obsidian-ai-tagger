@@ -1,24 +1,7 @@
 import { getAllTags, TFile, CachedMetadata} from 'obsidian';
 
 export function getVaultTags(): Array<string> {
-    const tagsSet: Set<string> = new Set(); // Use a set to ensure unique tags
-
-    const files: Array<TFile> = this.app.vault.getMarkdownFiles();
-    // get tags for each file
-    files.forEach((file: TFile) => {
-        const cache: CachedMetadata | null = this.app.metadataCache.getFileCache(file);
-        if (cache !== null) {
-            const tags: Array<string> | null = getAllTags(cache);
-
-            if (tags !== null) {
-                tags.forEach((tag) => tagsSet.add(tag));
-            }
-        }
-    })
-
-    const uniqueTagsArray: Array<string> = [...tagsSet];
-
-    return uniqueTagsArray;
+    return Object.entries(this.app.metadataCache.getTags()).sort((a, b) => b[1] - a[1]).map(a=>a[0])
 }
 
 export function getTagsString(): string {

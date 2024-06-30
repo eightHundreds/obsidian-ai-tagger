@@ -13,10 +13,21 @@ export interface AiTaggerSettings {
 	model: string;
 	custom_base_url: string;
 	lowerCaseMode: boolean;
+	systemPrompt: string;
 }
 
 const DEFAULT_SETTINGS: Partial<AiTaggerSettings> = {
-	model: 'gpt-3.5-turbo'
+	model: 'gpt-3.5-turbo',
+	systemPrompt:`You are an expert at categorizing documents using tags. Your task is to create tags for the users document. Tags are used to categorize and organize documents based on its content. The format of a tag is a pound sign followed by the category "#<category>", for example "#networking".  
+Here are some existing tags that you can use to categorize the document.
+
+EXISTING TAGS:
+\`\`\`
+{tagsString}
+\`\`\`
+
+Tag the users document based on its content. You can use between 0 and 5 of the EXISTING TAGS but also create 0 to 3 NEW TAGS that you come up with on your own. Ensure that the tags accurately reflect the document's primary focus and themes.
+`
 }
 
 
@@ -44,14 +55,16 @@ export default class AiTagger extends Plugin {
 		// get contents of document excluding frontmatter
 		let content: string = text.substring(contentStart);
 		console.debug("Content:", content.substring(0, 30) + "...")
-
+		const fileMetadata = this.app.metadataCache.getFileCache(currentFile);
 		try {
 			// notify user that we are generating tags
 			new Notice("Generating tags...");
 			console.info("Generating tags...");
 
+			const currentTags = fileMetadata?.frontmatter?.tags ?? [];
+			console.debug('Current Tags Of Current File:', currentTags,fileMetadata)
 			// generate tags for the document using an LLM
-			let generatedTags: Array<string> = await llm.generateTags(content);
+			let generatedTags: Array<string> = await llm.generateTags(content, currentTags);
 			// const generatedTags: Array<string> = ["#tag1", "#tag2"];
 			console.debug("Generated Tags:", generatedTags);
 
@@ -62,10 +75,11 @@ export default class AiTagger extends Plugin {
 			}
 
 			this.app.fileManager.processFrontMatter(currentFile, frontmatter => {
+				// 过滤掉currentTags中已经存在的tag
 				if (!frontmatter['tags']) {
 					frontmatter['tags'] = generatedTags;
 				} else {
-					frontmatter['tags'].push(...generatedTags)
+					frontmatter['tags'] = [...new Set([...frontmatter['tags'], ...generatedTags])];
 				}
 			});
 		} catch (error) {

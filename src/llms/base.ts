@@ -14,31 +14,31 @@ export abstract class LLM {
 
     getModelInfobyId(modelId: string): ModelInfo {
         const modelInfo: ModelInfo | undefined = models.find((model) => model.modelId === modelId);
-        
+
         if (typeof modelInfo === 'undefined') {
             throw new Error(`Model ${modelId} is not supported.`);
         }
-    
+
         return modelInfo;
     }
-    
+
     isTextWithinLimit(prompt: string, text: string): boolean {
         // Define token limits for the models
         const tokenLimit: number = this.modelInfo.tokenLimit;
-    
+
         // Calculate the number of tokens based on average token length (4 characters)
         const promptTokens = prompt.length / 4;
         const textTokens = text.length / 4;
-    
+
         const totalTokens = promptTokens + textTokens;
-    
+
         return totalTokens <= tokenLimit;
     }
 
     formatOutputTags(tags: Array<string>, newTags: Array<string>): Array<string> {
-        const tagsArray = [...tags, "|", ...newTags]
-        return tagsArray
+        const tagsArray = new Set([...tags, ...newTags])
+        return Array.from(tagsArray)
     }
 
-    abstract generateTags(documentText: string): Promise<Array<string>>;
+    abstract generateTags(documentText: string, currentTags?: string[]): Promise<Array<string>>;
 }
