@@ -34,7 +34,7 @@ export function getLlm(settings: AiTaggerSettings): LLM {
     } else if (modelInfo.company === OPENAI) {
         if (typeof settings.openAIApiKey === "string" && settings.openAIApiKey.startsWith("sk")) {
             try {
-                const llm = new OpenAiLLM(settings.model, settings.openAIApiKey, settings.custom_base_url)
+                const llm = new OpenAiLLM(settings.model, settings.openAIApiKey, settings)
                 return llm
             } catch (error) {
                 throw error;
