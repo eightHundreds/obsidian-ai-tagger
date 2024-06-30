@@ -1,7 +1,7 @@
 import { getAllTags, TFile, CachedMetadata} from 'obsidian';
 
 export function getVaultTags(): Array<string> {
-    return Object.entries(this.app.metadataCache.getTags()).sort((a, b) => b[1] - a[1]).map(a=>a[0])
+    return Object.entries(this.app.metadataCache.getTags()).sort((a:any, b:any) => b[1] - a[1]).map(a=>a[0])
 }
 
 export function getTagsString(): string {
