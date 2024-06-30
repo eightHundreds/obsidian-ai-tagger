@@ -11,39 +11,22 @@ import {
 import { LLM } from './base'
 import { TagDocumentTool } from '../tool'
 import { getTagsString as getVaultTagsString } from '../helpers/get_tags';
-
+import type { AiTaggerSettings } from '../main';
 // write a class to instantiate the chain and handle the prompts
 export class OpenAiLLM extends LLM {
     baseURL: string | null;
     model: Runnable;
     prompt: ChatPromptTemplate;
 
-    constructor(modelId: string, apiKey: string, baseURL: string | null = null) {
+    constructor(modelId: string, apiKey: string, private settings: AiTaggerSettings) {
         super(modelId, apiKey)
-        this.baseURL = baseURL;
+        this.baseURL = settings.custom_base_url;
         this.prompt = this.getPrompt();
         this.model = this.getModel();
     }
 
     getPrompt() {
-        const systemMessage = `
-You are an expert at categorizing documents using tags. Your task is to create tags for the users document. Tags are used to categorize and organize documents based on its content. The format of a tag is a pound sign followed by the category "#<category>", for example "#networking".  
-Here are some existing tags that you can use to categorize the document.
-
-EXISTING TAGS:
-\`\`\`
-{tagsString}
-\`\`\`
-
-USED TAGS:
-\`\`\`
-{currentTags}
-\`\`\`
-
-Tag the users document based on its content. You can use between 1 and 5 of the EXISTING TAGS but also create 0 to 3 NEW TAGS that you come up with on your own. 
-Make sure you don't have tags that are duplicates of USED TAGS
-Ensure that the tags accurately reflect the document's primary focus and themes.
-`
+        const systemMessage = this.settings.systemPrompt;
 
         const humanMessage = "DOCUMENT:\n```{document}```"
 
