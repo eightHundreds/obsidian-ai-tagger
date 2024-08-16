@@ -47,7 +47,7 @@ export class OpenAiLLM extends LLM {
                 temperature: 0.0,
                 configuration: {
                     baseURL: this.baseURL,
-                    timeout: 10000, // 10 seconds
+                    timeout: 20_000, // 10 seconds
                 }
             });
         } catch (error) {
